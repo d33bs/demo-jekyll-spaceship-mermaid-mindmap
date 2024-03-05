@@ -1,0 +1,35 @@
+name: Build and Deploy to Github Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Get Pages url
+        id: pages
+        uses: actions/configure-pages@v2
+        with:
+          enablement: false
+
+      - name: Build live version of site
+        run: |
+          JEKYLL_ENV=production bundle exec jekyll build  --baseurl "${{ steps.pages.outputs.base_path || '' }}"
+
+      - name: Deploy documentation
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: _site
+          token: ${{ secrets.GH_TOKEN }}
